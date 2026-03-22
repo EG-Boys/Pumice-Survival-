@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pumice Survival | Minecraft Server</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --blue-deep:   #0a1628;
+      --blue-mid:    #0d2044;
+      --blue-card:   rgba(255,255,255,0.06);
+      --blue-bright: #3b9eff;
+      --blue-light:  #70c4ff;
+      --blue-glow:   #a8daff;
+      --grass:       #5dbf3f;
+      --grass-top:   #74e050;
+      --dirt:        #8b6340;
+      --gold:        #f5c518;
+      --diamond:     #4ee8e8;
+      --stone:       #8a8a8a;
+      --white:       #f0f8ff;
+      --muted:       #7a90b5;
+      --accent:      #ffe94d;
+      --pink:        #ff6eb4;
+      --inv-bg:      rgba(13,22,44,0.85);
+      --inv-dark:    rgba(0,0,0,0.4);
+      --inv-light:   rgba(255,255,255,0.1);
+      --border:      rgba(59,158,255,0.2);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--blue-deep);
+      color: var(--white);
+      overflow-x: hidden;
+    }
+
+    /* ── SKY BG ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse at 20% 15%, rgba(59,158,255,0.22) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 60%, rgba(13,50,110,0.4) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 100%, rgba(112,196,255,0.1) 0%, transparent 50%);
+    }
+
+    /* ── STARS ── */
+    .stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .star {
+      position: absolute;
+      background: #fff;
+      border-radius: 0;
+      animation: twinkle ease-in-out infinite;
+    }
+    @keyframes twinkle {
+      0%,100% { opacity:.9; }
+      50%      { opacity:.1; }
+    }
+
+    /* ── FLOATING BLOCKS ── */
+    .blocks { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .fblock {
+      position: absolute;
+      opacity: 0;
+      animation: floatBlock linear infinite;
+    }
+    @keyframes floatBlock {
+      0%   { transform: translateY(110vh) rotate(0deg);  opacity: 0; }
+      8%   { opacity: .55; }
+      92%  { opacity: .35; }
+      100% { transform: translateY(-10vh) rotate(90deg); opacity: 0; }
+    }
+    .fb-grass { background: var(--grass); box-shadow: inset -3px -3px 0 var(--dirt), inset 2px 2px 0 var(--grass-top), 0 0 0 1px #000; }
+    .fb-stone { background: var(--stone); box-shadow: inset -3px -3px 0 #5a5a5a, inset 2px 2px 0 #aaa, 0 0 0 1px #000; }
+    .fb-gold  { background: var(--gold);  box-shadow: inset -3px -3px 0 #c09010, inset 2px 2px 0 #ffe76a, 0 0 0 1px #000; }
+    .fb-dia   { background: var(--diamond); box-shadow: inset -3px -3px 0 #1ab8b8, inset 2px 2px 0 #9efbfb, 0 0 0 1px #000; }
+    .fb-blue  { background: var(--blue-bright); box-shadow: inset -3px -3px 0 #1a60b0, inset 2px 2px 0 #90d0ff, 0 0 0 1px #000; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 36px;
+      height: 58px;
+      background: rgba(10,22,40,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 2px solid #000;
+      box-shadow: 0 2px 0 rgba(59,158,255,0.15), 0 4px 30px rgba(0,0,0,0.5);
+    }
+    .nav-logo {
+      font-family: 'Press Start 2P', monospace;
+      font-size: .72rem;
+      color: var(--blue-light);
+      text-decoration: none;
+      text-shadow: 0 0 16px rgba(112,196,255,0.5), 2px 2px 0 #000;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-logo img {
+      width: 34px; height: 34px;
+      border: 2px solid #000;
+      box-shadow: 0 0 10px rgba(59,158,255,0.4);
+      object-fit: cover;
+    }
+    .nav-links { display: flex; gap: 26px; list-style: none; align-items: center; }
+    .nav-links a {
+      font-family: 'Press Start 2P', monospace;
+      font-size: .48rem;
+      color: var(--muted);
+      text-decoration: none;
+      text-shadow: 1px 1px 0 #000;
+      transition: color .18s;
+    }
+    .nav-links a:hover { color: var(--blue-light); }
+    .nav-dc {
+      background: #5865f2 !important;
+      color: #fff !important;
+      padding: 7px 14px !important;
+      font-size: .46rem !important;
+      border: 2px solid #000 !important;
+      box-shadow: 2px 2px 0 #000 !important;
+      transition: transform .1s, box-shadow .1s !important;
+    }
+    .nav-dc:hover { transform: translate(1px,1px) !important; box-shadow: 1px 1px 0 #000 !important; }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 20px 80px;
+      position: relative; z-index: 1;
+    }
+
+    .hero-logo-wrap {
+      position: relative; margin-bottom: 28px;
+      display: inline-block;
+    }
+    /* spinning ring around logo */
+    .hero-logo-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -14px;
+      border: 2px dashed rgba(59,158,255,0.3);
+      border-radius: 50%;
+      animation: spin 10s linear infinite;
+    }
+    .hero-logo-wrap::after {
+      content: '';
+      position: absolute;
+      inset: -26px;
+      border: 1px solid rgba(59,158,255,0.12);
+      border-radius: 50%;
+      animation: spin 18s linear infinite reverse;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hero-logo {
+      width: 110px; height: 110px;
+      border: 3px solid #000;
+      box-shadow:
+        0 0 0 2px rgba(59,158,255,0.3),
+        0 0 30px rgba(59,158,255,0.45),
+        0 0 70px rgba(59,158,255,0.15);
+      display: block;
+      object-fit: cover;
+      animation: logoPulse 3s ease-in-out infinite;
+    }
+    @keyframes logoPulse {
+      0%,100% { box-shadow: 0 0 0 2px rgba(59,158,255,0.3), 0 0 30px rgba(59,158,255,0.45), 0 0 60px rgba(59,158,255,0.12); }
+      50%      { box-shadow: 0 0 0 2px rgba(59,158,255,0.5), 0 0 55px rgba(59,158,255,0.7), 0 0 90px rgba(59,158,255,0.2); }
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--inv-bg);
+      border: 2px solid #000;
+      box-shadow: 2px 2px 0 #000, 0 0 16px rgba(59,158,255,0.15);
+      padding: 6px 18px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: .48rem;
+      color: var(--grass-top);
+      text-shadow: 1px 1px 0 #000;
+      margin-bottom: 20px;
+    }
+    .badge-dot {
+      width: 8px; height: 8px;
+      background: var(--grass-top);
+      box-shadow: 0 0 6px var(--grass-top);
+      flex-shrink: 0;
+      animation: blink 1.5s ease-in-out infinite;
+    }
+    @keyframes blink { 50% { opacity: .2; } }
+
+    #hero h1 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(2rem, 6vw, 4.2rem);
+      line-height: 1.25;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #fff 0%, var(--blue-light) 45%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(3px 3px 0 rgba(0,0,0,0.8));
+    }
+    .hero-tagline {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(.52rem, 1.5vw, .82rem);
+      color: var(--gold);
+      text-shadow: 2px 2px 0 #000, 0 0 12px rgba(245,197,24,0.4);
+      margin-bottom: 20px;
+      letter-spacing: .08em;
+    }
+    #hero > p {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 500px;
+      margin: 0 auto 36px;
+      font-weight: 700;
+      line-height: 1.7;
+    }
+
+    .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 44px; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: .58rem;
+      text-decoration: none; cursor: pointer; border: none;
+      transition: transform .1s, box-shadow .1s;
+      letter-spacing: .02em;
+    }
+    .btn-blue {
+      background: var(--blue-bright);
+      color: #fff;
+      border: 2px solid #000;
+      box-shadow: 3px 3px 0 #000, 0 0 20px rgba(59,158,255,0.4);
+      text-shadow: 1px 1px 0 rgba(0,0,0,.5);
+    }
+    .btn-blue:hover { transform: translate(2px,2px); box-shadow: 1px 1px 0 #000, 0 0 10px rgba(59,158,255,0.3); }
+    .btn-discord {
+      background: #5865f2; color: #fff;
+      border: 2px solid #000;
+      box-shadow: 3px 3px 0 #000, 0 0 16px rgba(88,101,242,0.35);
+      text-shadow: 1px 1px 0 rgba(0,0,0,.5);
+    }
+    .btn-discord:hover { transform: translate(2px,2px); box-shadow: 1px 1px 0 #000; }
+    .btn-stone {
+      background: var(--stone); color: #fff;
+      border: 2px solid #000;
+      box-shadow: 3px 3px 0 #000;
+      text-shadow: 1px 1px 0 rgba(0,0,0,.5);
+    }
+    .btn-stone:hover { transform: translate(2px,2px); box-shadow: 1px 1px 0 #000; }
+
+    /* IP BOX */
+    .ip-box {
+      background: var(--inv-bg);
+      border: 3px solid #000;
+      box-shadow:
+        inset -3px -3px 0 rgba(0,0,0,0.5),
+        inset 3px 3px 0 rgba(255,255,255,0.08),
+        0 0 40px rgba(59,158,255,0.12);
+      padding: 22px 30px;
+      display: inline-flex; flex-wrap: wrap; gap: 26px; justify-content: center;
+      backdrop-filter: blur(16px);
+    }
+    .ip-entry { text-align: center; }
+    .ip-label {
+      font-family: 'Press Start 2P', monospace;
+      font-size: .42rem;
+      color: var(--muted);
+      text-shadow: 1px 1px 0 #000;
+      letter-spacing: .1em; margin-bottom: 7px;
+    }
+    .ip-val {
+      font-family: 'Press Start 2P', monospace;
+      font-size: .6rem; color: var(--white);
+      cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      text-shadow: 1px 1px 0 #000;
+      transition: color .15s;
+    }
+    .ip-val:hover { color: var(--gold); }
+    .ip-val .port { color: var(--diamond); font-size: .5rem; }
+
+    /* STATS */
+    #stats { display: flex; justify-content: center; padding: 16px; position: relative; z-index: 1; }
+    .stats-row {
+      display: flex;
+      background: var(--inv-bg);
+      border: 2px solid #000;
+      box-shadow: inset -2px -2px 0 rgba(0,0,0,.4), inset 2px 2px 0 rgba(255,255,255,.07);
+      backdrop-filter: blur(12px);
+    }
+    .stat-cell {
+      padding: 14px 32px; text-align: center;
+      border-right: 2px solid #000;
+    }
+    .stat-cell:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 1rem; color: var(--blue-light);
+      text-shadow: 2px 2px 0 #000, 0 0 12px rgba(112,196,255,0.4);
+      display: block; margin-bottom: 6px;
+    }
+    .stat-lbl {
+      font-family: 'Press Start 2P', monospace;
+      font-size: .38rem; color: var(--muted); letter-spacing: .07em;
+    }
+
+    /* ── GRASS DIVIDER ── */
+    .grass-divider {
+      height: 24px; position: relative; z-index: 1;
+      background: var(--grass);
+      box-shadow: 0 -4px 0 var(--grass-top), 0 4px 0 var(--dirt), 0 8px 0 #6b4c30;
+    }
+    .grass-divider::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.06) 0,rgba(0,0,0,0.06) 8px, transparent 8px, transparent 16px);
+    }
+
+    /* SECTIONS */
+    section { position: relative; z-index: 1; }
+    .section-inner { max-width: 1100px; margin: 0 auto; padding: 72px 24px; }
+
+    .section-eyebrow {
+      font-family: 'Press Start 2P', monospace;
+      font-size: .46rem; color: var(--grass-top);
+      text-shadow: 1px 1px 0 #000; letter-spacing: .14em;
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-eyebrow::before {
+      content: '';
+      display: inline-block; width: 12px; height: 12px; flex-shrink: 0;
+      background: var(--grass);
+      box-shadow: inset -2px -2px 0 var(--dirt), inset 1px 1px 0 var(--grass-top), 0 0 0 1px #000;
+    }
+    .section-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(.95rem, 2.8vw, 1.8rem);
+      line-height: 1.5; margin-bottom: 12px;
+      text-shadow: 3px 3px 0 #000;
+    }
+    .section-sub {
+      color: var(--muted); font-size: .95rem; font-weight: 700;
+      max-width: 540px; line-height: 1.7; margin-bottom: 44px;
+    }
+
+    /* MC PANEL */
+    .mc-panel {
+      background: var(--inv-bg);
+      border: 3px solid #000;
+      box-shadow:
+        inset -3px -3px 0 rgba(0,0,0,.45),
+        inset 3px 3px 0 rgba(255,255,255,.08);
+      backdrop-filter: blur(10px);
+      padding: 24px 22px;
+      transition: box-shadow .25s, transform .25s;
+    }
+    .mc-panel:hover {
+      box-shadow:
+        inset -3px -3px 0 rgba(0,0,0,.45),
+        inset 3px 3px 0 rgba(255,255,255,.08),
+        0 0 24px rgba(59,158,255,0.22);
+      transform: translateY(-3px);
+    }
+
+    /* ABOUT */
+    .about-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 10px; }
+    .about-card .card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .card-block {
+      width: 34px; height: 34px; flex-shrink: 0;
+      border: 2px solid #000;
+      display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+    }
+    .cb-grass { background:var(--grass); box-shadow: inset -3px -3px 0 var(--dirt), inset 2px 2px 0 var(--grass-top); }
+    .cb-gold  { background:var(--gold);  box-shadow: inset -3px -3px 0 #c09010, inset 2px 2px 0 #ffe76a; }
+    .cb-dia   { background:var(--diamond); box-shadow: inset -3px -3px 0 #1ab8b8, inset 2px 2px 0 #9efbfb; }
+    .cb-blue  { background:var(--blue-bright); box-shadow: inset -3px -3px 0 #1a60b0, inset 2px 2px 0 #90d0ff; }
+    .about-card h3 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: .6rem; color: var(--blue-light);
+      text-shadow: 1px 1px 0 #000; line-height: 1.6;
+    }
+    .about-card p { color: var(--muted); font-size: .88rem; line-height: 1.7; font-weight: 700; }
+
+    /* JOIN */
+    #join { border-top: 3px solid #000; }
+    .join-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px,1fr)); gap: 14px; }
+    .join-card { padding: 28px 24px; }
+    .platform-badge {
+      font-family: 'Press Start 2P', monospace;
+      font-size: .44rem; color: var(--diamond);
+      text-shadow: 1px 1px 0 #000;
+      display: inline-block;
+      background: rgba(78,232,232,0.08);
+      border: 2px solid #000;
+      box-shadow: 2px 2px 0 #000;
+      padding: 5px 12px; margin-bottom: 16px;
+    }
+    .join-card h3 { font-size: 1.1rem; font-weight: 900; color: #fff; margin-bottom: 18px; }
+    .join-field { margin-bottom: 10px; }
+    .join-field-label {
+      font-family: 'Press Start 2P', monospace;
+      font-size: .4rem; color: var(--muted);
+      text-shadow: 1px 1px 0 #000; letter-spacing: .08em; margin-bottom: 5px;
+    }
+    .join-field-val {
+      font-weight: 800; font-size: .93rem; color: var(--white);
+      background: rgba(0,0,0,0.4);
+      border: 2px solid #000;
+      box-shadow: inset 2px 2px 0 rgba(0,0,0,.4), inset -1px -1px 0 rgba(255,255,255,.05);
+      padding: 9px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer;
+      transition: color .15s, background .15s;
+    }
+    .join-field-val:hover { background: rgba(59,158,255,0.12); color: var(--blue-light); }
+    .join-field-val .ci { font-size: .75rem; opacity: .45; }
+    .join-note { margin-top: 12px; font-size: .82rem; color: var(--muted); font-weight: 700; line-height: 1.6; }
+
+    /* RULES */
+    #rules { border-top: 3px solid #000; }
+    .rules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px,1fr)); gap: 10px; }
+    .rule-block h3 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: .54rem; color: var(--blue-light);
+      margin-bottom: 16px; padding-bottom: 10px;
+      border-bottom: 2px solid #000;
+      text-shadow: 1px 1px 0 #000; line-height: 1.7;
+    }
+    .rule-row { display: flex; gap: 10px; margin-bottom: 11px; align-items: flex-start; }
+    .rule-row:last-child { margin-bottom: 0; }
+    .rule-bullet {
+      width: 10px; height: 10px; flex-shrink: 0; margin-top: 4px;
+      background: var(--grass);
+      border: 1px solid #000;
+      box-shadow: inset -1px -1px 0 var(--dirt), inset 1px 1px 0 var(--grass-top);
+    }
+    .rule-row strong { font-size: .87rem; font-weight: 900; display: block; margin-bottom: 2px; color: #fff; }
+    .rule-row span { color: var(--muted); font-size: .82rem; line-height: 1.6; font-weight: 700; }
+
+    /* GALLERY */
+    #gallery { border-top: 3px solid #000; }
+    .gallery-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+    .gal-item {
+      aspect-ratio: 16/9;
+      background: rgba(0,0,0,0.4);
+      border: 3px solid #000;
+      box-shadow: inset 2px 2px 0 rgba(255,255,255,.05), inset -2px -2px 0 rgba(0,0,0,.5);
+      display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px;
+      position: relative; overflow: hidden;
+      cursor: pointer;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .gal-item:hover { box-shadow: inset 2px 2px 0 rgba(255,255,255,.05), inset -2px -2px 0 rgba(0,0,0,.5), 0 0 20px rgba(59,158,255,0.3); transform: scale(1.02); }
+    .gal-item img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+    .gal-icon { font-size: 2rem; }
+    .gal-label { font-family: 'Press Start 2P', monospace; font-size: .38rem; color: var(--muted); text-align: center; padding: 0 12px; line-height: 1.8; text-shadow: 1px 1px 0 #000; }
+
+    /* FAQ */
+    #faq { border-top: 3px solid #000; }
+    .faq-list { max-width: 780px; display: flex; flex-direction: column; gap: 6px; }
+    .faq-item {
+      background: var(--inv-bg);
+      border: 2px solid #000;
+      box-shadow: inset -2px -2px 0 rgba(0,0,0,.4), inset 2px 2px 0 rgba(255,255,255,.07);
+      overflow: hidden; transition: box-shadow .2s;
+    }
+    .faq-item.open { box-shadow: inset -2px -2px 0 rgba(0,0,0,.4), inset 2px 2px 0 rgba(255,255,255,.07), 0 0 16px rgba(59,158,255,0.2); }
+    .faq-q {
+      padding: 16px 20px; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center;
+      font-weight: 800; font-size: .93rem;
+      user-select: none; gap: 16px;
+    }
+    .faq-q span { flex: 1; }
+    .faq-arrow {
+      font-family: 'Press Start 2P', monospace;
+      font-size: .5rem; color: var(--blue-light);
+      text-shadow: 1px 1px 0 #000;
+      transition: transform .3s; flex-shrink: 0;
+    }
+    .faq-item.open .faq-arrow { transform: rotate(180deg); }
+    .faq-a {
+      max-height: 0; overflow: hidden;
+      transition: max-height .4s ease, padding .3s;
+      font-size: .88rem; color: var(--muted);
+      line-height: 1.7; font-weight: 700; padding: 0 20px;
+    }
+    .faq-item.open .faq-a { max-height: 200px; padding-bottom: 16px; }
+
+    /* DISCORD CTA */
+    #discord-cta { border-top: 3px solid #000; text-align: center; }
+    .cta-box {
+      background: linear-gradient(135deg, rgba(88,101,242,0.18), rgba(59,158,255,0.1));
+      border: 3px solid #000;
+      box-shadow: inset -3px -3px 0 rgba(0,0,0,.4), inset 3px 3px 0 rgba(255,255,255,.07), 0 0 50px rgba(88,101,242,0.2);
+      max-width: 660px; margin: 0 auto; padding: 56px 40px;
+      backdrop-filter: blur(12px);
+    }
+    .cta-icon { font-size: 3rem; margin-bottom: 16px; display: block; }
+    .cta-box h2 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(.85rem, 2.5vw, 1.3rem);
+      line-height: 1.5; margin-bottom: 12px;
+      text-shadow: 2px 2px 0 #000;
+    }
+    .cta-box p { color: var(--muted); font-size: .95rem; font-weight: 700; margin-bottom: 28px; line-height: 1.7; }
+
+    /* FOOTER */
+    footer {
+      text-align: center; padding: 26px 20px;
+      color: var(--muted);
+      font-family: 'Press Start 2P', monospace;
+      font-size: .4rem; line-height: 2;
+      background: rgba(0,0,0,0.3);
+      border-top: 3px solid #000;
+      position: relative; z-index: 1;
+    }
+    footer a { color: var(--blue-light); text-decoration: none; }
+
+    /* TOAST */
+    .copy-toast {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--grass); color: #fff;
+      font-family: 'Press Start 2P', monospace; font-size: .5rem;
+      padding: 10px 20px;
+      border: 2px solid #000;
+      box-shadow: 3px 3px 0 #000, 0 0 14px rgba(93,191,63,0.5);
+      text-shadow: 1px 1px 0 #000;
+      opacity: 0; pointer-events: none;
+      transform: translateY(10px);
+      transition: opacity .25s, transform .25s;
+      z-index: 999;
+    }
+    .copy-toast.show { opacity: 1; transform: translateY(0); }
+
+    @media(max-width:640px){
+      nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .gallery-grid { grid-template-columns: 1fr; }
+      .stat-cell { padding: 12px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Stars & Blocks -->
+<div class="stars" id="stars"></div>
+<div class="blocks" id="blocks"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-logo">
+    <img src="https://i.ibb.co.com/tPY4nvvk/1771953918717.png" alt="Pumice Logo">
+    PUMICE
+  </a>
+  <ul class="nav-links">
+    <li><a href="#about">ABOUT</a></li>
+    <li><a href="#join">JOIN</a></li>
+    <li><a href="#rules">RULES</a></li>
+    <li><a href="#gallery">GALLERY</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="https://discord.gg/hVEWuMSqB" target="_blank" class="nav-dc">DISCORD</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-logo-wrap">
+    <img class="hero-logo" src="https://i.ibb.co.com/tPY4nvvk/1771953918717.png" alt="Pumice Survival Logo">
+  </div>
+
+  <div class="hero-badge"><span class="badge-dot"></span> SERVER ONLINE · ALL VERSIONS</div>
+  <h1>PUMICE</h1>
+  <div class="hero-tagline">✦ SURVIVAL ✦</div>
+  <p>Build, explore, and team up in a chill survival world. Java & Bedrock, cracked-friendly, always online — 24/7.</p>
+
+  <div class="hero-btns">
+    <a href="#join" class="btn btn-blue">▶ HOW TO JOIN</a>
+    <a href="https://discord.gg/hVEWuMSqB" target="_blank" class="btn btn-discord">DISCORD</a>
+    <a href="#rules" class="btn btn-stone">RULES</a>
+  </div>
+
+  <div class="ip-box">
+    <div class="ip-entry">
+      <div class="ip-label">💻 JAVA / TLAUNCHER</div>
+      <div class="ip-val" onclick="copyIP('pumice368.mcsh.io')">pumice368.mcsh.io &nbsp;⧉</div>
+    </div>
+    <div class="ip-entry">
+      <div class="ip-label">📱 BEDROCK / MOBILE</div>
+      <div class="ip-val" onclick="copyIP('pumice368.mcsh.io')">pumice368.mcsh.io <span class="port">:19132</span> &nbsp;⧉</div>
+    </div>
+    <div class="ip-entry">
+      <div class="ip-label">🟢 STATUS</div>
+      <div class="ip-val" style="cursor:default;">
+        <span style="display:inline-block;width:8px;height:8px;background:var(--grass-top);box-shadow:0 0 6px var(--grass-top);flex-shrink:0;animation:blink 1.5s ease-in-out infinite;"></span>
+        &nbsp;<span id="status-txt">CHECKING…</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="stats-row">
+    <div class="stat-cell">
+      <span class="stat-num"><span style="display:inline-block;width:7px;height:7px;background:var(--grass-top);box-shadow:0 0 6px var(--grass-top);margin-right:5px;animation:blink 1.5s ease-in-out infinite;"></span><span id="stat-online">--</span></span>
+      <span class="stat-lbl">ONLINE NOW</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-num" id="stat-max">--</span>
+      <span class="stat-lbl">MAX SLOTS</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-num">1.19+</span>
+      <span class="stat-lbl">VERSIONS</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-num">24/7</span>
+      <span class="stat-lbl">UPTIME</span>
+    </div>
+  </div>
+</section>
+
+<!-- GRASS DIVIDER -->
+<div class="grass-divider"></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-inner">
+    <div class="section-eyebrow">WHAT WE'RE ABOUT</div>
+    <h2 class="section-title">BUILD. EXPLORE.<br>SURVIVE. ⛏️</h2>
+    <p class="section-sub">Pumice Survival is a friendly, community-first server where everyone has a place — builders, fighters, and casual players alike.</p>
+    <div class="about-grid">
+      <div class="mc-panel about-card">
+        <div class="card-top"><div class="card-block cb-grass">🏰</div><h3>BUILD FREELY</h3></div>
+        <p>No grief, no theft. Your builds are safe. Create from cozy cottages to massive kingdoms — this world is yours.</p>
+      </div>
+      <div class="mc-panel about-card">
+        <div class="card-top"><div class="card-block cb-gold">🤝</div><h3>TEAM UP</h3></div>
+        <p>Form squads, build kingdoms, and collaborate. We actively encourage community building and group projects.</p>
+      </div>
+      <div class="mc-panel about-card">
+        <div class="card-top"><div class="card-block cb-dia">⚔️</div><h3>FAIR PVP</h3></div>
+        <p>PvP is on but consensual. No hunting peaceful players. Keep fights fun between willing participants only.</p>
+      </div>
+      <div class="mc-panel about-card">
+        <div class="card-top"><div class="card-block cb-blue">🌍</div><h3>ALL WELCOME</h3></div>
+        <p>Java, Bedrock, TLauncher, Pojav — everyone can join. Cracked players welcome. Just keep it fair and fun.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- JOIN -->
+<section id="join">
+  <div class="section-inner">
+    <div class="section-eyebrow">GET IN THE GAME</div>
+    <h2 class="section-title">HOW TO JOIN 🚀</h2>
+    <p class="section-sub">We support every way to play. Click any value to copy it instantly!</p>
+    <div class="join-cards">
+      <div class="mc-panel join-card">
+        <div class="platform-badge">💻 JAVA / TLAUNCHER / POJAV</div>
+        <h3>Java Edition</h3>
+        <div class="join-field">
+          <div class="join-field-label">SERVER IP</div>
+          <div class="join-field-val" onclick="copyIP('pumice368.mcsh.io')">pumice368.mcsh.io <span class="ci">⧉</span></div>
+        </div>
+        <div class="join-field">
+          <div class="join-field-label">VERSIONS SUPPORTED</div>
+          <div class="join-field-val" style="cursor:default;color:var(--gold);">1.19 — 1.21+</div>
+        </div>
+        <p class="join-note">Add as a multiplayer server in Minecraft and connect!</p>
+      </div>
+      <div class="mc-panel join-card">
+        <div class="platform-badge">📱 BEDROCK / MOBILE / CONSOLE</div>
+        <h3>Bedrock Edition</h3>
+        <div class="join-field">
+          <div class="join-field-label">SERVER NAME</div>
+          <div class="join-field-val" onclick="copyIP('Pumice Survival')">Pumice Survival <span class="ci">⧉</span></div>
+        </div>
+        <div class="join-field">
+          <div class="join-field-label">ADDRESS</div>
+          <div class="join-field-val" onclick="copyIP('pumice368.mcsh.io')">pumice368.mcsh.io <span class="ci">⧉</span></div>
+        </div>
+        <div class="join-field">
+          <div class="join-field-label">PORT</div>
+          <div class="join-field-val" onclick="copyIP('19132')">19132 <span class="ci">⧉</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GRASS DIVIDER -->
+<div class="grass-divider"></div>
+
+<!-- RULES -->
+<section id="rules">
+  <div class="section-inner">
+    <div class="section-eyebrow">KEEP IT FUN</div>
+    <h2 class="section-title">SERVER RULES 📜</h2>
+    <p class="section-sub">Simple guidelines to keep Pumice chill and welcoming for everyone.</p>
+    <div class="rules-grid">
+      <div class="mc-panel rule-block">
+        <h3>⚖️ GENERAL CONDUCT</h3>
+        <div class="rule-row"><div class="rule-bullet"></div><div><strong>Be Respectful</strong><span>No toxic behavior, harassment, or hate speech of any kind.</span></div></div>
+        <div class="rule-row"><div class="rule-bullet"></div><div><strong>English Only</strong><span>Keep public chat readable for everyone in the community.</span></div></div>
+        <div class="rule-row"><div class="rule-bullet"></div><div><strong>No Spamming</strong><span>Don't flood chat or overuse caps.</span></div></div>
+      </div>
+      <div class="mc-panel rule-block">
+        <h3>⚔️ SURVIVAL & PVP</h3>
+        <div class="rule-row"><div class="rule-bullet"></div><div><strong>Peaceful Vibe</strong><span>Survival-first. We're here to build and hang out!</span></div></div>
+        <div class="rule-row"><div class="rule-bullet"></div><div><strong>Consensual PvP</strong><span>Don't hunt players who don't want to fight.</span></div></div>
+        <div class="rule-row"><div class="rule-bullet"></div><div><strong>No Griefing</strong><span>Do not break, burn, or mess with others' builds.</span></div></div>
+        <div class="rule-row"><div class="rule-bullet"></div><div><strong>No Stealing</strong><span>If it's not yours, don't touch it. Chests included.</span></div></div>
+      </div>
+      <div class="mc-panel rule-block">
+        <h3>🤝 COMMUNITY</h3>
+        <div class="rule-row"><div class="rule-bullet"></div><div><strong>Team Up</strong><span>Form teams, build kingdoms, live together!</span></div></div>
+        <div class="rule-row"><div class="rule-bullet"></div><div><strong>Spawn Area</strong><span>Keep spawn clean and help out new players.</span></div></div>
+      </div>
+      <div class="mc-panel rule-block">
+        <h3>🚫 TECHNICAL</h3>
+        <div class="rule-row"><div class="rule-bullet"></div><div><strong>No Cheating</strong><span>No X-ray, flying, or hacked clients. = permanent IP ban.</span></div></div>
+        <div class="rule-row"><div class="rule-bullet"></div><div><strong>Fair Play</strong><span>Cracked players welcome — just no cheating, ever.</span></div></div>
+        <div class="rule-row"><div class="rule-bullet"></div><div><strong>No Lag Machines</strong><span>No massive redstone clocks that lag the server.</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="section-inner">
+    <div class="section-eyebrow">FROM THE WORLD</div>
+    <h2 class="section-title">GALLERY 📸</h2>
+    <p class="section-sub">Screenshots from the Pumice world. Submit yours on Discord!</p>
+    <div class="gallery-grid">
+      <div class="gal-item"><span class="gal-icon">📷</span><div class="gal-label">SCREENSHOT COMING SOON</div></div>
+      <div class="gal-item"><span class="gal-icon">🏰</span><div class="gal-label">YOUR BUILD HERE</div></div>
+      <div class="gal-item"><span class="gal-icon">🌄</span><div class="gal-label">SHARE ON DISCORD</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- GRASS DIVIDER -->
+<div class="grass-divider"></div>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="section-inner">
+    <div class="section-eyebrow">GOT QUESTIONS?</div>
+    <h2 class="section-title">FAQ ❓</h2>
+    <p class="section-sub">Everything you need to know before joining.</p>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)"><span>Is the server free to join?</span><span class="faq-arrow">▾</span></div>
+        <div class="faq-a">Yes! Pumice Survival is completely free. No pay-to-win, no purchases needed. Just grab Minecraft or a cracked launcher and join.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)"><span>Can I join on mobile or console?</span><span class="faq-arrow">▾</span></div>
+        <div class="faq-a">Yes! Bedrock Edition works on mobile (iOS/Android), Windows 10/11, and consoles. Use pumice368.mcsh.io with port 19132.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)"><span>Are cracked / TLauncher players allowed?</span><span class="faq-arrow">▾</span></div>
+        <div class="faq-a">Yes! TLauncher, Pojav, and Mojo users are all welcome. Just play fairly — cheating gets you permanently banned.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)"><span>Is PvP forced on everyone?</span><span class="faq-arrow">▾</span></div>
+        <div class="faq-a">No. PvP is enabled but consensual. Don't hunt people who don't want to fight. Keep it fun and fair for everyone.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)"><span>What versions are supported?</span><span class="faq-arrow">▾</span></div>
+        <div class="faq-a">Java 1.19 through 1.21+. Bedrock players can join on any recent version too.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)"><span>How do I report a player or get help?</span><span class="faq-arrow">▾</span></div>
+        <div class="faq-a">Join our Discord at discord.gg/hVEWuMSqB and use the report channel to reach staff. We're always happy to help!</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DISCORD CTA -->
+<section id="discord-cta">
+  <div class="section-inner">
+    <div class="cta-box">
+      <span class="cta-icon">💬</span>
+      <h2>JOIN THE COMMUNITY</h2>
+      <p>Chat with players, get announcements, report issues, and make friends. Our Discord is the heart of Pumice!</p>
+      <a href="https://discord.gg/hVEWuMSqB" target="_blank" class="btn btn-discord" style="font-size:.6rem;padding:14px 32px;">discord.gg/hVEWuMSqB →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  © 2025 PUMICE SURVIVAL &nbsp;·&nbsp; <a href="https://discord.gg/hVEWuMSqB">DISCORD</a> &nbsp;·&nbsp; ALL RIGHTS RESERVED
+</footer>
+
+<div class="copy-toast" id="copy-toast">✓ COPIED!</div>
+
+<script>
+  // STARS
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 130; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random() < .6 ? 2 : Math.random() < .5 ? 3 : 1;
+    s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*75}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*5}s;`;
+    starsEl.appendChild(s);
+  }
+
+  // FLOATING BLOCKS
+  const blocksEl = document.getElementById('blocks');
+  const bTypes = ['fb-grass','fb-stone','fb-gold','fb-dia','fb-blue'];
+  for (let i = 0; i < 14; i++) {
+    const b = document.createElement('div');
+    b.className = `fblock ${bTypes[Math.floor(Math.random()*bTypes.length)]}`;
+    const sz = 10 + Math.floor(Math.random()*14);
+    b.style.cssText = `left:${Math.random()*100}%;width:${sz}px;height:${sz}px;animation-duration:${10+Math.random()*14}s;animation-delay:${Math.random()*12}s;`;
+    blocksEl.appendChild(b);
+  }
+
+  // COPY
+  function copyIP(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      const t = document.getElementById('copy-toast');
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 1800);
+    });
+  }
+
+  // FAQ
+  function toggleFaq(el) {
+    const item = el.parentElement;
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+
+  // SERVER STATUS — tries multiple APIs
+  async function fetchStatus() {
+    const ip = 'pumice368.mcsh.io';
+    const apis = [
+      `https://api.mcsrvstat.us/3/${ip}`,
+      `https://api.mcsrvstat.us/2/${ip}`,
+      `https://mcapi.us/server/status?ip=${ip}`,
+    ];
+    for (const url of apis) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) continue;
+        const data = await res.json();
+        // mcsrvstat format
+        if (typeof data.online !== 'undefined') {
+          document.getElementById('status-txt').textContent = data.online ? 'ONLINE' : 'OFFLINE';
+          document.getElementById('stat-online').textContent = data.players?.online ?? '0';
+          document.getElementById('stat-max').textContent   = data.players?.max    ?? '--';
+          return;
+        }
+        // mcapi.us format
+        if (typeof data.status !== 'undefined') {
+          const online = data.status === 'online';
+          document.getElementById('status-txt').textContent = online ? 'ONLINE' : 'OFFLINE';
+          document.getElementById('stat-online').textContent = data.players?.now ?? '0';
+          document.getElementById('stat-max').textContent   = data.players?.max ?? '--';
+          return;
+        }
+      } catch { continue; }
+    }
+    document.getElementById('status-txt').textContent = 'ONLINE';
+    document.getElementById('stat-online').textContent = '--';
+    document.getElementById('stat-max').textContent   = '--';
+  }
+  fetchStatus();
+  setInterval(fetchStatus, 60000); // refresh every 60s
+
+  // SCROLL FADE
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; } });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.about-card,.rule-block,.join-card,.faq-item,.gal-item').forEach(el => {
+    el.style.opacity='0'; el.style.transform='translateY(20px)';
+    el.style.transition='opacity 0.45s ease, transform 0.45s ease';
+    obs.observe(el);
+  });
+</script>
+</body>
+</html>
